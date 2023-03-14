@@ -1,3 +1,11 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">LoadApp</string>
+    <string name="radio_button_txt1">Glide - Image Loading Library by BumpTech</string>
+    <string name="radio_button_txt2">LoadApp - Current repository by Udacity</string>
+    <string name="radio_button_txt3">Retrofit - Type-safe HTTP Client for Android and Java by Square Inc.</string>
+
+    <string name="notification_desc">This is the Notification to show download status</string>
+
+    <string name="notification_channel_name">Download</string>
+    <string name="notification_channel_id">fcm_default_channel</string>
 </resources>
