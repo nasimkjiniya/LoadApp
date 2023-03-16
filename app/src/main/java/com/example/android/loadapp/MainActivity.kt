@@ -1,10 +1,8 @@
 package com.example.android.loadapp
 
-import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -14,17 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.example.android.loadapp.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
-
-    private val broadcastReceiver = DownloadCompleteReceiver()
-    private val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
@@ -125,14 +117,4 @@ class MainActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        //unregisterReceiver(broadcastReceiver)
-    }
-
-//    override fun onBackPressed() {
-//        this.finish()
-//    }
 }

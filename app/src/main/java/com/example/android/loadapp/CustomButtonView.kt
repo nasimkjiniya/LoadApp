@@ -1,5 +1,7 @@
 package com.example.android.loadapp
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.app.DownloadManager
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -12,9 +14,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 
 
 class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: AttributeSet?=null)
@@ -22,21 +22,44 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 {
 
     private lateinit var notificationManager: NotificationManager
+    private lateinit var button: View
+    private var label : String = "Download"
 
+    private lateinit var rect : Rect
+    private var currentAngle = 0
+    val colorFrom = ContextCompat.getColor(context,R.color.purple_200)
+    val colorTo = ContextCompat.getColor(context,R.color.purple_500)
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL_AND_STROKE
-        color=ContextCompat.getColor(context,R.color.purple_500)
+        color=colorTo
         strokeWidth =1f
         textAlign = Paint.Align.CENTER
         textSize = 70.0f
         typeface = Typeface.create( "", Typeface.BOLD)
     }
 
-    private lateinit var rect : Rect
+    private val paintLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL_AND_STROKE
+        color=Color.WHITE
+        strokeWidth =1f
+        textAlign = Paint.Align.CENTER
+        textSize = 60.0f
+        typeface = Typeface.create( "", Typeface.BOLD)
+    }
 
+    private val paintArc = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL_AND_STROKE
+        color=colorTo
+        strokeWidth =1f
+        textAlign = Paint.Align.CENTER
+        textSize = 60.0f
+        typeface = Typeface.create( "", Typeface.BOLD)
+    }
 
     init {
+
+        button = findViewById(R.id.download_button)
 
         isClickable = true
         notificationManager =
@@ -51,32 +74,68 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        //use this method to set your own colors
-
         //draw the Rectangle
         rect = Rect(0,0,width,height)
         canvas.drawRect(rect,paint)
-        paint.color = Color.WHITE
-        canvas.drawText("label", (width/2).toFloat(), (height/1.6).toFloat(),paint)
-        paint.color = ContextCompat.getColor(context,R.color.purple_500)
+
+        val rectF = RectF(700F, 40F, 780F, 120F)
+
+        if(currentAngle.toFloat()==200F)
+        {
+            paintArc.color = colorTo
+            label="Download"
+        }
+        else{
+            canvas.drawArc(rectF, 0F,200F+currentAngle,true, paintArc);
+        }
+        canvas.drawText(label, (width/2).toFloat(), (height/1.6).toFloat(),paintLabel)
     }
 
     override fun performClick(): Boolean {
-       // if (super.performClick()) return true
+        if (super.performClick()) return true
 
         val url = MainActivity.url
         if(url != "")
-            download(MainActivity.url)
-        else
-            Toast.makeText(context,"Please select a url",Toast.LENGTH_LONG).show()
+        {
+            val colorAnimation = ValueAnimator.ofObject(ArgbEvaluator(), colorFrom, colorTo)
+            colorAnimation.duration = 4000 // milliseconds
+            colorAnimation.addUpdateListener {
+                    animator -> paint.color = (animator.animatedValue as Int)
+                label = "We are Loading"
+                paintArc.color=Color.YELLOW
+                invalidate()
 
-        invalidate()
+            }
+            colorAnimation.start()
+            download(MainActivity.url)
+        }
+        else
+            Toast.makeText(context,"Please select a File to Download",Toast.LENGTH_SHORT).show()
+
+
         return true
+    }
+
+    fun startAnimatingArc(maxAngle: Float) {
+        paintArc.color=Color.YELLOW
+        currentAngle = 0
+        Thread {
+            while (currentAngle <= maxAngle) {
+                invalidate()
+                try {
+                    Thread.sleep(700)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+                currentAngle+=40
+            }
+        }.start()
     }
 
 
     private fun download(url : String)
     {
+        startAnimatingArc(160F)
         val manager : DownloadManager = context.getSystemService(DownloadManager::class.java)
 
         val uri: Uri =
@@ -94,12 +153,14 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
         // using query method
         var finishDownload : Boolean = false
         var process : Int =0
+        var count : Int =0
         while (!finishDownload) {
+            count++
             val cursor: Cursor =
                 manager.query(DownloadManager.Query().setFilterById(reference))
             if (cursor.moveToFirst()) {
                 val status: Int =
-                    cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                    cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
                 when (status) {
                     DownloadManager.STATUS_FAILED -> {
                         finishDownload = true
@@ -111,6 +172,10 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
                     }
                     else -> {
                         process =0
+                        if(count>1000)
+                        {
+                            break
+                        }
                     }
                 }
             }
@@ -118,7 +183,6 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         notificationManager.cancelAll()
         sendNotification(process,url)
-
     }
 
     private fun sendNotification(status : Int,url: String)
@@ -150,5 +214,4 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
         notificationManager.notify(NOTIFICATION_ID,builder.build())
 
     }
-
 }

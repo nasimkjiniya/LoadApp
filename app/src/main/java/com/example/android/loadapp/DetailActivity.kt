@@ -1,14 +1,12 @@
 package com.example.android.loadapp
 
 import android.app.ActivityOptions
-import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.internal.ContextUtils.getActivity
 
 
 class DetailActivity : AppCompatActivity() {
@@ -53,9 +51,8 @@ class DetailActivity : AppCompatActivity() {
         when(status)
         {
             1-> etv_status.text = "Success"
-            -1 -> etv_status.text = "Failed"
             else -> {
-                etv_status.text = "Pending"
+                etv_status.text = "Failed"
             }
         }
 

@@ -66,24 +66,16 @@
             android:text="@string/radio_button_txt3" />
     </RadioGroup>
 
-    <androidx.constraintlayout.motion.widget.MotionLayout
+    <com.example.android.loadapp.CustomButtonView
+        android:id="@+id/download_button"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="30dp">
-
-        <com.example.android.loadapp.CustomButtonView
-            android:id="@+id/download_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-             />
-
-    </androidx.constraintlayout.motion.widget.MotionLayout>
-
-
+        android:layout_marginBottom="30dp"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
