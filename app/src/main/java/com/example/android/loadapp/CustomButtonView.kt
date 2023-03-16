@@ -181,6 +181,7 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
             }
         }
 
+        Toast.makeText(context,"Download Completed",Toast.LENGTH_SHORT).show()
         notificationManager.cancelAll()
         sendNotification(process,url)
     }
@@ -204,11 +205,12 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         val builder = NotificationCompat.Builder(context, context.getString(R.string.notification_channel_id))
             .setSmallIcon(R.drawable.download)
-            .setContentTitle("Download")
-            .setContentText("Click to check the download status")
+            .setSettingsText("Expand to check status")
+            .setContentTitle("Download Completed")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             // Set the intent that will fire when the user taps the notification
             .setContentIntent(contentPendingIntent)
+            .addAction(R.drawable.ic_launcher_background,"Status",contentPendingIntent)
             .setAutoCancel(true)
 
         notificationManager.notify(NOTIFICATION_ID,builder.build())
