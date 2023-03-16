@@ -15,6 +15,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat.getColor
+import androidx.core.content.withStyledAttributes
 
 
 class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: AttributeSet?=null)
@@ -27,8 +29,8 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
     private lateinit var rect : Rect
     private var currentAngle = 0
-    val colorFrom = ContextCompat.getColor(context,R.color.purple_200)
-    val colorTo = ContextCompat.getColor(context,R.color.purple_500)
+    var colorFrom = 0
+    var colorTo = 0
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL_AND_STROKE
@@ -61,6 +63,15 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         button = findViewById(R.id.download_button)
 
+        context.withStyledAttributes(attributeSet,R.styleable.CustomButtonView) {
+            colorFrom = getColor(R.styleable.CustomButtonView_colorFrom, 0)
+            colorTo = getColor(R.styleable.CustomButtonView_colorTo, 0)
+            label = getString(R.styleable.CustomButtonView_text).toString()
+        }
+
+        paintArc.color=colorFrom
+        paint.color=colorFrom
+
         isClickable = true
         notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -76,10 +87,10 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         //draw the Rectangle
         rect = Rect(0,0,width,height)
+
         canvas.drawRect(rect,paint)
 
         val rectF = RectF(700F, 40F, 780F, 120F)
-
         if(currentAngle.toFloat()==200F)
         {
             paintArc.color = colorTo
