@@ -90,7 +90,7 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         canvas.drawRect(rect,paint)
 
-        val rectF = RectF(700F, 40F, 780F, 120F)
+        val rectF = RectF(750F, 40F, 820F, 120F)
         if(currentAngle.toFloat()==200F)
         {
             paintArc.color = colorTo
@@ -134,7 +134,7 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
             while (currentAngle <= maxAngle) {
                 invalidate()
                 try {
-                    Thread.sleep(700)
+                    Thread.sleep(500)
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }

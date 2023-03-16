@@ -7,8 +7,10 @@
     <!-- TODO: Define a Transition -->
     <!-- A transition describes an animation via start and end state -->
     <Transition
+        motion:motionInterpolator="linear"
         motion:constraintSetStart="@+id/start"
         motion:constraintSetEnd="@+id/end"
+        motion:autoTransition="animateToEnd"
         motion:duration="1000">
         <!-- TODO: Handle clicks -->
         <!-- MotionLayout will handle clicks on @id/red_star to "toggle" the animation between the start and end -->
@@ -26,8 +28,12 @@
     <ConstraintSet android:id="@+id/start">
         <Constraint
             android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="32dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent" />
     </ConstraintSet>
 
     <!-- TODO: Define @id/end -->

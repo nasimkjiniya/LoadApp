@@ -39,6 +39,11 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        url = ""
+    }
+
     private fun getElements()
     {
         checkForPermssion()
