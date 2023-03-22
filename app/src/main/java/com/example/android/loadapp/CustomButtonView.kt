@@ -10,12 +10,11 @@ import android.content.Intent
 import android.database.Cursor
 import android.graphics.*
 import android.net.Uri
+import android.os.Handler
 import android.util.AttributeSet
 import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.core.content.withStyledAttributes
 
 
@@ -26,11 +25,15 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
     private lateinit var notificationManager: NotificationManager
     private lateinit var button: View
     private var label : String = "Download"
+    private var widthFrom : Float = 0F
+    private var widthTo : Float = 0F
 
     private lateinit var rect : Rect
     private var currentAngle = 0
     var colorFrom = 0
     var colorTo = 0
+    var leftRect = 0
+    var rightRect = 0
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL_AND_STROKE
@@ -67,36 +70,39 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
             colorFrom = getColor(R.styleable.CustomButtonView_colorFrom, 0)
             colorTo = getColor(R.styleable.CustomButtonView_colorTo, 0)
             label = getString(R.styleable.CustomButtonView_text).toString()
+            widthFrom=getDimension(R.styleable.CustomButtonView_widthFrom,0F)
+            widthTo=getDimension(R.styleable.CustomButtonView_widthTo,0F)
         }
 
         paintArc.color=colorFrom
         paint.color=colorFrom
+        leftRect = 100
+        rightRect = 850
 
         isClickable = true
         notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-       // rect = Rect(0,0,w,h)
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        //draw the Rectangle
-        rect = Rect(0,0,width,height)
-
-        canvas.drawRect(rect,paint)
-
         val rectF = RectF(750F, 40F, 820F, 120F)
+
         if(currentAngle.toFloat()==200F)
         {
             paintArc.color = colorTo
             label="Download"
+            leftRect = 100
+            rightRect = 850
+            //draw the Rectangle
+            rect = Rect(leftRect,0,rightRect,height) //width end
+            canvas.drawRect(rect,paint)
         }
         else{
+            //draw the Rectangle
+            rect = Rect(leftRect,0,rightRect,height) // width start
+            canvas.drawRect(rect,paint)
             canvas.drawArc(rectF, 0F,200F+currentAngle,true, paintArc);
         }
         canvas.drawText(label, (width/2).toFloat(), (height/1.6).toFloat(),paintLabel)
@@ -108,12 +114,14 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
         val url = MainActivity.url
         if(url != "")
         {
-            val colorAnimation = ValueAnimator.ofObject(ArgbEvaluator(), colorFrom, colorTo)
+            val colorAnimation = ValueAnimator.ofObject(ArgbEvaluator(), colorTo, colorFrom)
             colorAnimation.duration = 4000 // milliseconds
             colorAnimation.addUpdateListener {
                     animator -> paint.color = (animator.animatedValue as Int)
                 label = "We are Loading"
                 paintArc.color=Color.YELLOW
+                leftRect = 50
+                rightRect = 900
                 invalidate()
 
             }
@@ -176,25 +184,34 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
                     DownloadManager.STATUS_FAILED -> {
                         finishDownload = true
                         process =-1
+                        startToastThread(-1)
                     }
                     DownloadManager.STATUS_SUCCESSFUL -> {
                         finishDownload = true
                         process =1
+                        startToastThread(1)
                     }
                     else -> {
                         process =0
-                        if(count>1000)
-                        {
-                            break
-                        }
                     }
                 }
             }
         }
 
-        Toast.makeText(context,"Download Completed",Toast.LENGTH_SHORT).show()
+
         notificationManager.cancelAll()
         sendNotification(process,url)
+    }
+
+    private fun startToastThread(status: Int)
+    {
+        Handler().postDelayed(Runnable {
+            when(status)
+            {
+                1->Toast.makeText(context,"Download Completed",Toast.LENGTH_SHORT).show()
+                else->Toast.makeText(context,"Download Failed",Toast.LENGTH_SHORT).show()
+            }
+        }, 1500)
     }
 
     private fun sendNotification(status : Int,url: String)

@@ -4,5 +4,8 @@
         <attr name="colorFrom" format="color" />
         <attr name="colorTo" format="color" />
         <attr name="text" format="string" />
+
+        <attr name="widthFrom" format="dimension" />
+        <attr name="widthTo" format="dimension" />
     </declare-styleable>
 </resources>
