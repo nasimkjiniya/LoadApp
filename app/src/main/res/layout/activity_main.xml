@@ -84,9 +84,12 @@
     <com.example.android.loadapp.CustomButtonView
         android:id="@+id/download_button"
         android:layout_width="wrap_content"
+        android:animateLayoutChanges="true"
         android:layout_gravity="center"
         android:layout_height="60dp"
+        android:background="@drawable/button_background"
         app:widthFrom="200dp"
+        app:widthTo="800dp"
         app:text="@string/button_text"
         app:colorFrom="@color/purple_500"
         app:colorTo="@color/purple_200" />

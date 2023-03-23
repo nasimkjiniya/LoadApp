@@ -1,6 +1,7 @@
 package com.example.android.loadapp
 
 import android.animation.ArgbEvaluator
+import android.animation.TimeAnimator
 import android.animation.ValueAnimator
 import android.app.DownloadManager
 import android.app.NotificationManager
@@ -9,6 +10,8 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.*
+import android.graphics.drawable.ClipDrawable
+import android.graphics.drawable.LayerDrawable
 import android.net.Uri
 import android.os.Handler
 import android.util.AttributeSet
@@ -19,7 +22,7 @@ import androidx.core.content.withStyledAttributes
 
 
 class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: AttributeSet?=null)
-    : View(context,attributeSet)
+    : View(context,attributeSet),TimeAnimator.TimeListener
 {
 
     private lateinit var notificationManager: NotificationManager
@@ -35,9 +38,15 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
     var leftRect = 0
     var rightRect = 0
 
+    private lateinit var clipDrawable: ClipDrawable
+    private val LEVEL_INCREMENT = 80
+    private val MAX_LEVEL = 500000
+    var currentLevel = 0
+    var mAnimator = TimeAnimator()
+
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL_AND_STROKE
-        color=colorTo
+        color=colorFrom
         strokeWidth =1f
         textAlign = Paint.Align.CENTER
         textSize = 70.0f
@@ -55,7 +64,7 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
     private val paintArc = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL_AND_STROKE
-        color=colorTo
+        color=colorFrom
         strokeWidth =1f
         textAlign = Paint.Align.CENTER
         textSize = 60.0f
@@ -66,6 +75,10 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
         button = findViewById(R.id.download_button)
 
+        val layerDrawable = findViewById<View>(R.id.download_button).background as LayerDrawable
+        clipDrawable = (layerDrawable.findDrawableByLayerId(R.id.clip_drawable) as ClipDrawable)!!
+        mAnimator.setTimeListener(this)
+
         context.withStyledAttributes(attributeSet,R.styleable.CustomButtonView) {
             colorFrom = getColor(R.styleable.CustomButtonView_colorFrom, 0)
             colorTo = getColor(R.styleable.CustomButtonView_colorTo, 0)
@@ -74,8 +87,8 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
             widthTo=getDimension(R.styleable.CustomButtonView_widthTo,0F)
         }
 
-        paintArc.color=colorFrom
-        paint.color=colorFrom
+//        paintArc.color=colorFrom
+//        paint.color=colorFrom
         leftRect = 100
         rightRect = 850
 
@@ -98,11 +111,13 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
             //draw the Rectangle
             rect = Rect(leftRect,0,rightRect,height) //width end
             canvas.drawRect(rect,paint)
+            clipDrawable.draw(canvas)
         }
         else{
             //draw the Rectangle
             rect = Rect(leftRect,0,rightRect,height) // width start
             canvas.drawRect(rect,paint)
+            clipDrawable.draw(canvas)
             canvas.drawArc(rectF, 0F,200F+currentAngle,true, paintArc);
         }
         canvas.drawText(label, (width/2).toFloat(), (height/1.6).toFloat(),paintLabel)
@@ -112,20 +127,15 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
         if (super.performClick()) return true
 
         val url = MainActivity.url
+        currentLevel = 0
+        mAnimator.start()
         if(url != "")
         {
-            val colorAnimation = ValueAnimator.ofObject(ArgbEvaluator(), colorTo, colorFrom)
-            colorAnimation.duration = 4000 // milliseconds
-            colorAnimation.addUpdateListener {
-                    animator -> paint.color = (animator.animatedValue as Int)
-                label = "We are Loading"
-                paintArc.color=Color.YELLOW
-                leftRect = 50
-                rightRect = 900
-                invalidate()
-
-            }
-            colorAnimation.start()
+            label = "We are Loading"
+            paintArc.color=Color.YELLOW
+            leftRect = 50
+            rightRect = 900
+            invalidate()
             download(MainActivity.url)
         }
         else
@@ -133,6 +143,15 @@ class CustomButtonView @JvmOverloads constructor(context: Context,attributeSet: 
 
 
         return true
+    }
+
+    override fun onTimeUpdate(animation: TimeAnimator?, totalTime: Long, deltaTime: Long) {
+        clipDrawable.setLevel(currentLevel)
+        if (currentLevel >= MAX_LEVEL) {
+            mAnimator.cancel();
+        } else {
+            currentLevel = Math.min(MAX_LEVEL, currentLevel + LEVEL_INCREMENT);
+        }
     }
 
     fun startAnimatingArc(maxAngle: Float) {
